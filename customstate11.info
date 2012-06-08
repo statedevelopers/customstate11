@@ -1,0 +1,7 @@
+name = Custom Module for State.gov
+description = "Performs miscellaneous tasks."
+core = 7.x
+
+scripts[] = js/customstate11.js
+
+configure = admin/config/user-interface/customstate11

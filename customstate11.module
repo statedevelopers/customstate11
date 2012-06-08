@@ -1,0 +1,266 @@
+<?php
+/**
+ * @file
+ * Custom State 2011 Module file.
+ *
+ */
+
+/**
+ * Implements hook_help.
+ *
+ * Displays help and module information.
+ *
+ * @param path
+ *   Which path of the site we're using to display help
+ * @param arg
+ *   Array that holds the current path as returned from arg() function
+ */
+  function customstate11_help($path, $arg) {
+    switch ($path) {
+      case "admin/help#customstate11":
+        return '<p>' . t("This custom module performs miscellaneous tasks not appropriate for a contributed module.") . '</p>';
+        break;
+    }
+  }
+
+/**
+ * Implements hook_menu().
+ *
+ */
+  function customstate11_menu() {
+    $items = array();
+
+    // AJAX: Photo page for popup display
+    $items['image_record/popup/%'] = array(
+      'page callback'=>'customstate11_photo_popup',
+      'page arguments' => array(2),
+      'access arguments' => array('view image_record'),
+      'type'=>MENU_CALLBACK,
+    );
+
+    // Fix-it operation for cleaning up nodes.
+    $items['fixit/%/%/%'] = array(
+      'title' => 'Fixit nodes',
+      'description' => 'Revise data for imported nodes.',
+      'page callback'=>'customstate11_fixit',
+      'page arguments' => array(1,2,3),
+      'access arguments' => array('edit image_record'),
+      'file' => 'customstate11_fixit.inc',
+      'type'=>MENU_CALLBACK,
+    );
+
+    // Fix-it operation for cleaning up users.
+    $items['fixituser'] = array(
+      'title' => 'Fixit user',
+      'description' => 'Revise data for imported users.',
+      'page callback'=>'customstate11_fixituser',
+      'page arguments' => array(1,2),
+      'access arguments' => array('edit user'),
+      'file' => 'customstate11_fixit.inc',
+      'type'=>MENU_CALLBACK,
+    );
+
+    return $items;
+  }
+
+/**
+ * Implements hook_views_api().
+ */
+function customstate11_views_api() {
+  return array(
+    'api' => 3.0,
+    'path' => drupal_get_path('module', 'relation') . '/views',
+  );
+}
+
+/**
+ * Implements hook_tokens().
+ *
+ */
+function customstate11_tokens(){
+  
+
+}
+
+  /**
+   * Implements hook_theme_registry_alter().
+   * Use to override rate module theming. 
+   */
+  function customstate11_theme_registry_alter(&$theme_registry) {
+    $theme_registry['rate_template_thumbs_up']['path'] = 'sites/all/modules/customstate11/templates';
+  }
+
+/**
+ * Implements hook_panels_pre_render() from the Panels module.
+ * This is a workaround proposed by MerlinOfChaos to temporarily
+ * compensate for the fact that Panels does not call node_view.
+ * Needed for custom_breadcrumbs module.
+ *
+ */
+function customstate11_panels_pre_render($display, $renderer) {
+  if (!empty($display->context['argument_entity_id:node_1']->data)) {
+    $node = $display->context['argument_entity_id:node_1']->data;
+    $result = custom_breadcrumbs_node_view($node, 'full');
+  }
+  return NULL;
+}  
+
+/**
+ * Callback function for displaying photo page as popup.
+ *
+ * @param $nid
+ *   Node ID of the image_record.
+ */
+  function customstate11_photo_popup($nid = NULL) {
+    $query = "
+      SELECT COUNT(*) AS expression 
+      FROM field_data_endpoints src
+      INNER JOIN relation 
+        ON relation.rid = src.entity_id 
+      INNER JOIN field_data_endpoints tgt 
+        ON tgt.entity_id = relation.rid 
+        AND tgt.delta = 1       
+      WHERE src.endpoints_entity_id = $nid 
+        AND src.delta = 0 
+    ";
+
+    $result = db_query($query);
+    foreach($result as $record) $count = $record->expression;
+    
+    $element = "<div class=\"inner-count container-count-$nid\" id=\"container-count-$nid\">$count</div>";
+    
+    // Display ONLY the results, don't display within a themed page.
+    print drupal_json_encode(array('nid'=>$nid, 'count'=>$count, 'element'=>$element));
+  }
+
+function customstate11_node_insert() {
+  drupal_set_message(t('Please allow 24 hours for indexing before new entries appear in searches.'));
+}
+
+function customstate11_node_update() {
+  //drupal_set_message(t('Please allow 24 hours for indexing before changed content is searchable.'));
+}
+
+/**
+ * Callback function for fixing node data.
+ *
+ * Parses all the nodes and makes logical corrections.
+ *
+ * NOTICE: This function uses call-time pass by reference 
+ * in it's parsers--see the ampersand (&) before variables. 
+ * This practice has been deprecated since Drupal 5 and
+ * triggers a warning from the bootstrap.inc code.
+ * You must comment out those calls when not in use. 
+ */
+  function customstate11_fixit($bundle, $offset_iterations = 0, $max_iterations = 100) {
+print "Flag 1<br />\n"; 
+    //if($nid0) return(customstate11_shownode($nid0, $nid1));
+
+    // SET CONSTANTS
+      $iteration_count = 0;
+      $changecount = 0;
+      $skipcount = 0;
+
+    // LOAD COMPARISON ARRAYS
+      //$regions = customstate11_loadregions();
+      //$users = customstate11_loadusers();
+      //$countries = customstate11_loadcountries();
+      //$countryregions = customstate11_loadcountryregions();
+
+    // PARSE THE NODES
+      $result = db_query("SELECT nid FROM {node} WHERE type = '$bundle' LIMIT $offset_iterations, $max_iterations");
+print "Flag A.<br />\n";
+      foreach ($result as $key=>$record) {      
+        $iteration_count++;      
+        $node = node_load($record->nid);
+        
+        // Choose a photos function. 
+        //customstate11_setnode_countryfromcontent(&$node, $countries, &$changecount);
+        //customstate11_setnode_regionfromkeywords(&$node, $regions, &$changecount);
+        //customstate11_setnode_regionfromcountry(&$node, $countryregions, &$changecount);
+        //customstate11_setnode_creationfromdate(&$node, &$changecount);
+        //customstate11_setnode_datefromdesc(&$node, &$changecount);
+        //customstate11_setnode_datefromexif(&$node, &$changecount);
+        //customstate11_setnode_personfromcontent(&$node, &$changecount);
+        //customstate11_setnode_dateformat(&$node, &$changecount);
+        
+        // Choose an articles function.
+        
+        // Choose a general node function.
+        customstate11_setnode_authorfromauxauthor($node) ? $changecount++ : $skipcount++;
+ 
+             
+      }
+
+print $iteration_count . " items reviewed from " . ($offset_iterations) . " to " . ($offset_iterations+$key) . ".<br />\n";
+print "$changecount changes made.<br />\n";
+  }
+
+/**
+ * Callback function for fixing user data.
+ *
+ * Parses all the users and makes logical corrections.
+ *
+ * NOTICE: This function uses call-time pass by reference 
+ * in it's parsers--see the ampersand (&) before variables. 
+ * This practice has been deprecated since Drupal 5 and
+ * triggers a warning from the bootstrap.inc code.
+ * You must comment out those calls when not in use. 
+ */
+  function customstate11_fixituser($offset_iterations = 0, $max_iterations = 100) {
+print "Flag 1.<br />\n";exit;
+    // SET CONSTANTS
+      $iteration_count = 0;
+      $changecount = 0;
+
+    // LOAD COMPARISON ARRAYS
+      //$regions = customstate11_loadregions();
+      //$countries = customstate11_loadcountries();
+      //$countryregions = customstate11_loadcountryregions();
+
+    // PARSE THE NODES
+      $users = customstate11_loadusers();
+      foreach ($users as $key=>$user) {
+        $iteration_count++;      
+                
+        // Choose a function. 
+        //customstate11_setuser_fullname(&$user, &$changecount);
+      }
+
+print $iteration_count . " items reviewed from " . ($offset_iterations) . " to " . ($offset_iterations+$key) . ".<br />\n";
+print "$changecount changes made.<br />\n";
+  }
+
+/**
+ * Basic string function to find a word in a string.
+ *
+ * More intelligent use of strpos for whole words or names.
+ *
+ */
+  function customstate11_strpos($haystack, $needle, $capitalized = 0) {    
+    $pos = stripos($haystack,$needle);
+
+    if($pos===FALSE) return(FALSE);
+
+    // Confirm start of the word
+    if(ctype_alpha(substr($haystack, ($pos-1),1))) return(FALSE);
+
+    // Confirm end of the word
+    if(ctype_alpha(substr($haystack, ($pos+strlen($needle)), 1))) return(FALSE);
+
+    // Check for capitalization
+    if($capitalized) {
+      if(ctype_lower(substr($haystack, ($pos),1))) return(FALSE);
+    }
+
+    return($pos);
+  }
+
+/**
+ * Implements hook_search_api_query_alter().
+ *
+ * Force all searches to be sorted by field_imagedate in descending order. 
+ */
+  function customstate11_search_api_query_alter(SearchApiQueryInterface $query) {
+    $query->sort('field_imagedate', 'DESC');  
+  }
