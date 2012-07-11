@@ -87,7 +87,7 @@ function customstate11_tokens(){
    * Use to override rate module theming. 
    */
   function customstate11_theme_registry_alter(&$theme_registry) {
-    $theme_registry['rate_template_thumbs_up']['path'] = 'sites/all/modules/customstate11/templates';
+    $theme_registry['rate_template_thumbs_up']['path'] = drupal_get_path('module', 'customstate11') . '/templates';
   }
 
 /**
