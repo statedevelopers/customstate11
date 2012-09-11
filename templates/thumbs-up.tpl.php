@@ -15,14 +15,14 @@ if ($user_vote) {
     . ' class="rate-marker rate-thumbs-up-btn-up"'
     . ' id="rate-button-' . $id . '" '
     . '>'
-    . 'Like'
+    . 'Vote'
     . '</div>';
 } else {
   $up_button = '<a'
     . ' class="rate-button rate-thumbs-up-btn-up"'
     . ' id="rate-button-' . $id . '" rel="nofollow" '
     . 'href="' . $links[0]['href'] . '">'
-    . 'Like'
+    . 'Vote'
     . '</a>';
 }
 print $up_button;
@@ -31,10 +31,10 @@ switch ($results['count']) {
   case 0: 
     break;
   case 1: 
-    print '<div class="rate-info">' . $results['count'] . '&nbsp;like</div>';
+    print '<div class="rate-info">' . $results['count'] . '&nbsp;vote</div>';
     break;
   default: 
-    print '<div class="rate-info">' . $results['count'] . '&nbsp;likes</div>';
+    print '<div class="rate-info">' . $results['count'] . '&nbsp;votes</div>';
     break;
 }
 
